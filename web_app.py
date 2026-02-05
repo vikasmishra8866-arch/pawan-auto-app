@@ -18,14 +18,15 @@ st.write(f"**Current Date & Time:** {current_time}")
 
 # Input Section
 cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
+veh_name = st.text_input("Vehicle Name", placeholder="e.g. PIAGGIO / APE") # NAYA BOX YAHAN HAI
 
 col1, col2 = st.columns(2)
 with col1:
     price = st.number_input("Vehicle Price (Rs)", value=0)
     down = st.number_input("Down Payment (Rs)", value=0)
-    file_charges = st.number_input("File Charges (Rs)", value=0) # Alag Box 1
+    file_charges = st.number_input("File Charges (Rs)", value=0)
 with col2:
-    other_charges = st.number_input("Other Charges (Rs)", value=0) # Alag Box 2
+    other_charges = st.number_input("Other Charges (Rs)", value=0)
     roi = st.number_input("Flat Interest Rate (%)", value=18.0)
 
 # Total Loan Calculation
@@ -34,6 +35,8 @@ loan_amt = (price - down) + file_charges + other_charges
 if st.button("Calculate & Create PDF"):
     if not cust_name:
         st.error("Please enter Customer Name!")
+    elif not veh_name:
+        st.error("Please enter Vehicle Name!")
     elif price <= 0:
         st.error("Please enter Vehicle Price!")
     else:
@@ -45,12 +48,13 @@ if st.button("Calculate & Create PDF"):
         c.drawCentredString(300, 775, "Managed by: Vikas Mishra")
         c.line(50, 765, 550, 765)
         
-        # PDF mein Indian Time
+        # PDF mein Indian Time aur Details
         c.setFont("Helvetica", 11)
         c.drawString(70, 740, f"Customer: {cust_name}")
+        c.drawString(70, 725, f"Vehicle: {veh_name}") # PDF mein Vehicle Name
         c.drawRightString(530, 740, f"Date: {current_time}")
         
-        y = 690
+        y = 680
         basics = [
             ("Vehicle Price", f"Rs. {price:,.2f}"),
             ("Down Payment", f"Rs. {down:,.2f}"),
