@@ -1,7 +1,7 @@
 import streamlit as st
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors # Colors ke liye
+from reportlab.lib import colors
 import datetime
 import io
 import pytz 
@@ -11,10 +11,12 @@ IST = pytz.timezone('Asia/Kolkata')
 current_time = datetime.datetime.now(IST).strftime("%d-%m-%Y %I:%M %p")
 
 # Page Setup
-st.set_page_config(page_title="Pawan Finance Premium", page_icon="🏦")
+st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦")
 
+# --- UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
-st.subheader("Professional Quotation Generator") 
+st.markdown(f"**Managed by: Vikas Mishra**") # Kharab line hata kar ye likh diya
+st.write(f"📅 {current_time}")
 
 # Input Section
 cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
@@ -36,34 +38,33 @@ f_val = file_charges if file_charges is not None else 0
 o_val = other_charges if other_charges is not None else 0
 loan_amt = (p_val - d_val) + f_val + o_val
 
-if st.button("Generate Professional PDF"):
+if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name or price is None:
         st.error("Please fill all details!")
     else:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # --- HEADER DESIGN ---
-        c.setFillColor(colors.HexColor("#1e3d59")) # Dark Blue Theme
+        # --- HEADER ---
+        c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 30)
-        c.drawCentredString(300, 790, "PAWAN AUTO FINANCE")
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(300, 770, "Reliable Finance for Your Dream Vehicle")
+        c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
+        c.setFont("Helvetica-BoldOblique", 14)
+        c.drawCentredString(300, 770, "Managed by: Vikas Mishra")
         
-        # --- CUSTOMER & DATE DETAILS ---
+        # --- DETAILS ---
         c.setFillColor(colors.black)
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, 720, f"Customer Name: {cust_name.upper()}")
-        c.drawString(50, 700, f"Vehicle Model: {veh_name.upper()}")
-        c.drawRightString(540, 720, f"Date: {current_time}")
+        c.drawString(50, 720, f"CUSTOMER: {cust_name.upper()}")
+        c.drawString(50, 700, f"VEHICLE: {veh_name.upper()}")
+        c.drawRightString(540, 720, f"DATE: {current_time}")
         c.line(50, 690, 540, 690)
 
-        # --- FINANCIAL DETAILS ---
         y = 660
         data = [
-            ("Ex-Showroom Price", f"Rs. {p_val:,.2f}"),
+            ("Vehicle Price", f"Rs. {p_val:,.2f}"),
             ("Down Payment", f"Rs. {d_val:,.2f}"),
             ("File Charges", f"Rs. {f_val:,.2f}"),
             ("Other Charges", f"Rs. {o_val:,.2f}"),
@@ -80,7 +81,7 @@ if st.button("Generate Professional PDF"):
         
         c.line(50, y+10, 540, y+10)
 
-        # --- EMI TABLE DESIGN ---
+        # --- EMI TABLE ---
         y -= 30
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(50, y-10, 490, 30, fill=1)
@@ -91,8 +92,8 @@ if st.button("Generate Professional PDF"):
         c.setFillColor(colors.black)
         y -= 40
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(80, y, "Tenure (Months)")
-        c.drawRightString(500, y, "Monthly EMI (Rs)")
+        c.drawString(80, y, "TENURE")
+        c.drawRightString(500, y, "MONTHLY EMI (RS)")
         c.line(50, y-5, 540, y-5)
         
         y -= 25
@@ -105,10 +106,10 @@ if st.button("Generate Professional PDF"):
             
         # --- FOOTER ---
         c.line(50, 100, 540, 100)
-        c.setFont("Helvetica-Oblique", 10)
-        c.drawString(50, 80, "* This is a computer-generated quotation.")
-        c.drawRightString(540, 80, "Authorized Signatory")
-        c.setFont("Helvetica-Bold", 11)
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(50, 85, "* This is a computer-generated quotation.")
+        c.setFont("Helvetica-Bold", 12)
+        c.drawRightString(540, 85, "Authorized Signature")
         c.drawRightString(540, 65, "Vikas Mishra")
 
         c.save()
