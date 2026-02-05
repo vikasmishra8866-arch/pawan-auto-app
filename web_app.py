@@ -15,7 +15,7 @@ st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦")
 
 # --- UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
-st.markdown(f"**Managed by: Vikas Mishra**") 
+st.markdown(f"**AGARWAL ENTERPRISE**") 
 st.write(f"📅 {current_time}")
 
 # Input Section
@@ -38,7 +38,7 @@ f_val = file_charges if file_charges is not None else 0
 o_val = other_charges if other_charges is not None else 0
 loan_amt = (p_val - d_val) + f_val + o_val
 
-if st.button("Generate Premium PDF Quotation"):
+if st.button("Generate Final PDF Quotation"):
     if not cust_name or not veh_name or price is None:
         st.error("Please fill all details!")
     else:
@@ -49,20 +49,23 @@ if st.button("Generate Premium PDF Quotation"):
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 30)
-        c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
+        c.setFont("Helvetica-Bold", 28)
+        c.drawCentredString(300, 800, "PAWAN AUTO FINANCE")
         
-        # NAYI TAGLINE YAHAN HAI
-        c.setFont("Helvetica-Oblique", 12)
-        c.drawCentredString(300, 775, "Fastest Loan Approval & Trusted Service")
+        # Sub-heading: AGARWAL ENTERPRISE
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(300, 778, "AGARWAL ENTERPRISE")
+        
+        c.setFont("Helvetica-Oblique", 10)
+        c.drawCentredString(300, 762, "Fastest Loan Approval & Trusted Service")
         
         # --- DETAILS SECTION ---
         c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
+        c.setFont("Helvetica-Bold", 11)
         c.drawString(50, 720, f"CUSTOMER NAME: {cust_name.upper()}")
-        c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
+        c.drawString(50, 705, f"VEHICLE MODEL: {veh_name.upper()}")
         c.drawRightString(540, 720, f"DATE: {current_time}")
-        c.line(50, 690, 540, 690)
+        c.line(50, 695, 540, 695)
 
         y = 660
         data = [
@@ -75,9 +78,9 @@ if st.button("Generate Premium PDF Quotation"):
         ]
         
         for label, val in data:
-            c.setFont("Helvetica-Bold", 12)
+            c.setFont("Helvetica-Bold", 11)
             c.drawString(70, y, label)
-            c.setFont("Helvetica", 12)
+            c.setFont("Helvetica", 11)
             c.drawRightString(520, y, val)
             y -= 25
         
@@ -88,12 +91,12 @@ if st.button("Generate Premium PDF Quotation"):
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(50, y-10, 490, 30, fill=1)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 14)
+        c.setFont("Helvetica-Bold", 13)
         c.drawCentredString(300, y, "EMI REPAYMENT OPTIONS")
         
         c.setFillColor(colors.black)
         y -= 40
-        c.setFont("Helvetica-Bold", 12)
+        c.setFont("Helvetica-Bold", 11)
         c.drawString(80, y, "TENURE")
         c.drawRightString(500, y, "MONTHLY EMI (RS)")
         c.line(50, y-5, 540, y-5)
@@ -101,19 +104,18 @@ if st.button("Generate Premium PDF Quotation"):
         y -= 25
         for m in [12, 18, 24, 36]:
             emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
-            c.setFont("Helvetica", 12)
+            c.setFont("Helvetica", 11)
             c.drawString(80, y, f"{m} Months Plan")
             c.drawRightString(500, y, f"{emi:,.2f}")
             y -= 25
             
-        # --- FOOTER ---
+        # --- FOOTER (Signature Section) ---
         c.line(50, 100, 540, 100)
-        c.setFont("Helvetica-Oblique", 9)
-        c.drawString(50, 85, "* This is a computer-generated quotation.")
         c.setFont("Helvetica-Bold", 12)
-        c.drawRightString(540, 85, "Authorized Signature")
-        c.drawRightString(540, 65, "Vikas Mishra")
+        c.drawRightString(540, 80, "For, AGARWAL ENTERPRISE") # Signature line updated
+        c.setFont("Helvetica", 10)
+        c.drawRightString(540, 60, "(Authorized Signatory)")
 
         c.save()
-        st.success("Professional PDF Generated!")
-        st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
+        st.success("Final Professional PDF Generated!")
+        st.download_button("📥 Download Agarwal Enterprise Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
