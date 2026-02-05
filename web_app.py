@@ -15,7 +15,7 @@ st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦")
 
 # --- UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
-st.markdown(f"**Managed by: Vikas Mishra**") # Kharab line hata kar ye likh diya
+st.markdown(f"**Managed by: Vikas Mishra**") 
 st.write(f"📅 {current_time}")
 
 # Input Section
@@ -45,20 +45,22 @@ if st.button("Generate Premium PDF Quotation"):
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # --- HEADER ---
+        # --- HEADER (Blue Theme) ---
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 30)
         c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
-        c.setFont("Helvetica-BoldOblique", 14)
-        c.drawCentredString(300, 770, "Managed by: Vikas Mishra")
         
-        # --- DETAILS ---
+        # NAYI TAGLINE YAHAN HAI
+        c.setFont("Helvetica-Oblique", 12)
+        c.drawCentredString(300, 775, "Fastest Loan Approval & Trusted Service")
+        
+        # --- DETAILS SECTION ---
         c.setFillColor(colors.black)
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, 720, f"CUSTOMER: {cust_name.upper()}")
-        c.drawString(50, 700, f"VEHICLE: {veh_name.upper()}")
+        c.drawString(50, 720, f"CUSTOMER NAME: {cust_name.upper()}")
+        c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
         c.drawRightString(540, 720, f"DATE: {current_time}")
         c.line(50, 690, 540, 690)
 
