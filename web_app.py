@@ -1,20 +1,20 @@
 import streamlit as st
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors # Colors ke liye
 import datetime
 import io
-import pytz  # Indian Time ke liye
+import pytz 
 
 # --- INDIAN TIME SETTING ---
 IST = pytz.timezone('Asia/Kolkata')
 current_time = datetime.datetime.now(IST).strftime("%d-%m-%Y %I:%M %p")
 
 # Page Setup
-st.set_page_config(page_title="Pawan Finance", page_icon="🏦")
+st.set_page_config(page_title="Pawan Finance Premium", page_icon="🏦")
 
 st.title("🏦 PAWAN AUTO FINANCE")
-st.subheader("Welcome, Vikas Mishra") 
-st.write(f"**Current Date & Time:** {current_time}")
+st.subheader("Professional Quotation Generator") 
 
 # Input Section
 cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
@@ -22,48 +22,48 @@ veh_name = st.text_input("Vehicle Name", placeholder="e.g. PIAGGIO / APE")
 
 col1, col2 = st.columns(2)
 with col1:
-    # value=None karne se box khali (blank) aayega
     price = st.number_input("Vehicle Price (Rs)", value=None, placeholder="Type Price...")
     down = st.number_input("Down Payment (Rs)", value=None, placeholder="Type Down Payment...")
     file_charges = st.number_input("File Charges (Rs)", value=None, placeholder="Type File Charges...")
 with col2:
     other_charges = st.number_input("Other Charges (Rs)", value=None, placeholder="Type Other Charges...")
-    roi = st.number_input("Flat Interest Rate (%)", value=18.0) # Ye auto-fill rahega
+    roi = st.number_input("Flat Interest Rate (%)", value=18.0)
 
-# Calculation ke liye None ko 0 manna padega
+# Calculations
 p_val = price if price is not None else 0
 d_val = down if down is not None else 0
 f_val = file_charges if file_charges is not None else 0
 o_val = other_charges if other_charges is not None else 0
-
-# Total Loan Calculation
 loan_amt = (p_val - d_val) + f_val + o_val
 
-if st.button("Calculate & Create PDF"):
-    if not cust_name:
-        st.error("Please enter Customer Name!")
-    elif not veh_name:
-        st.error("Please enter Vehicle Name!")
-    elif price is None or price <= 0:
-        st.error("Please enter Vehicle Price!")
+if st.button("Generate Professional PDF"):
+    if not cust_name or not veh_name or price is None:
+        st.error("Please fill all details!")
     else:
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
-        c.setFont("Helvetica-Bold", 28)
-        c.drawCentredString(300, 800, "PAWAN AUTO FINANCE")
+        
+        # --- HEADER DESIGN ---
+        c.setFillColor(colors.HexColor("#1e3d59")) # Dark Blue Theme
+        c.rect(0, 750, 600, 100, fill=1)
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 30)
+        c.drawCentredString(300, 790, "PAWAN AUTO FINANCE")
         c.setFont("Helvetica", 12)
-        c.drawCentredString(300, 775, "Managed by: Vikas Mishra")
-        c.line(50, 765, 550, 765)
+        c.drawCentredString(300, 770, "Reliable Finance for Your Dream Vehicle")
         
-        # PDF Details
-        c.setFont("Helvetica", 11)
-        c.drawString(70, 740, f"Customer: {cust_name}")
-        c.drawString(70, 725, f"Vehicle: {veh_name}")
-        c.drawRightString(530, 740, f"Date: {current_time}")
-        
-        y = 680
-        basics = [
-            ("Vehicle Price", f"Rs. {p_val:,.2f}"),
+        # --- CUSTOMER & DATE DETAILS ---
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, 720, f"Customer Name: {cust_name.upper()}")
+        c.drawString(50, 700, f"Vehicle Model: {veh_name.upper()}")
+        c.drawRightString(540, 720, f"Date: {current_time}")
+        c.line(50, 690, 540, 690)
+
+        # --- FINANCIAL DETAILS ---
+        y = 660
+        data = [
+            ("Ex-Showroom Price", f"Rs. {p_val:,.2f}"),
             ("Down Payment", f"Rs. {d_val:,.2f}"),
             ("File Charges", f"Rs. {f_val:,.2f}"),
             ("Other Charges", f"Rs. {o_val:,.2f}"),
@@ -71,25 +71,46 @@ if st.button("Calculate & Create PDF"):
             ("Interest Rate", f"{roi}% (Flat)")
         ]
         
-        for label, val in basics:
+        for label, val in data:
             c.setFont("Helvetica-Bold", 12)
-            c.drawString(100, y, f"{label}:")
+            c.drawString(70, y, label)
             c.setFont("Helvetica", 12)
-            c.drawRightString(450, y, val)
-            y -= 30
+            c.drawRightString(520, y, val)
+            y -= 25
+        
+        c.line(50, y+10, 540, y+10)
 
-        y -= 20
+        # --- EMI TABLE DESIGN ---
+        y -= 30
+        c.setFillColor(colors.HexColor("#1e3d59"))
+        c.rect(50, y-10, 490, 30, fill=1)
+        c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(300, y, "EMI REPAYMENT OPTIONS")
-        y -= 10; c.line(100, y, 500, y)
         
+        c.setFillColor(colors.black)
+        y -= 40
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(80, y, "Tenure (Months)")
+        c.drawRightString(500, y, "Monthly EMI (Rs)")
+        c.line(50, y-5, 540, y-5)
+        
+        y -= 25
         for m in [12, 18, 24, 36]:
-            y -= 30
             emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
             c.setFont("Helvetica", 12)
-            c.drawString(150, y, f"{m} Months Tenure")
-            c.drawRightString(450, y, f"Rs. {emi:,.2f}")
+            c.drawString(80, y, f"{m} Months Plan")
+            c.drawRightString(500, y, f"{emi:,.2f}")
+            y -= 25
             
+        # --- FOOTER ---
+        c.line(50, 100, 540, 100)
+        c.setFont("Helvetica-Oblique", 10)
+        c.drawString(50, 80, "* This is a computer-generated quotation.")
+        c.drawRightString(540, 80, "Authorized Signatory")
+        c.setFont("Helvetica-Bold", 11)
+        c.drawRightString(540, 65, "Vikas Mishra")
+
         c.save()
-        st.success("PDF taiyaar hai!")
-        st.download_button(label="📥 Download Quotation PDF", data=buffer.getvalue(), file_name=f"Quotation_{cust_name}.pdf", mime="application/pdf")
+        st.success("Professional PDF Generated!")
+        st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
