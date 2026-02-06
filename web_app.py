@@ -40,6 +40,25 @@ f_val = file_charges if file_charges is not None else 0
 o_val = other_charges if other_charges is not None else 0
 loan_amt = (p_val - d_val) + f_val + o_val
 
+# --- LIVE EMI PREVIEW SECTION ---
+st.markdown("---")
+st.subheader("📊 Live EMI Preview")
+if price is not None:
+    p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+    tenures = [12, 18, 24, 36]
+    cols = [p_col1, p_col2, p_col3, p_col4]
+    
+    for m, col in zip(tenures, cols):
+        if int_type == "Flat Rate":
+            emi_val = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
+        else:
+            r = roi / (12 * 100)
+            emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
+        col.metric(f"{m} Months", f"₹{emi_val:,.0f}")
+else:
+    st.info("Enter Vehicle Price to see live EMI.")
+st.markdown("---")
+
 if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name or price is None:
         st.error("Please fill all details!")
@@ -47,17 +66,17 @@ if st.button("Generate Premium PDF Quotation"):
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # --- WATERMARK (Light Grey Background Text) ---
+        # --- WATERMARK ---
         c.saveState()
         c.setFont("Helvetica-Bold", 50)
         c.setStrokeColor(colors.lightgrey)
-        c.setFillColor(colors.lightgrey, alpha=0.15) # Halka dikhne ke liye alpha kam rakha hai
-        c.translate(300, 450) # Page ke center mein
-        c.rotate(45) # Tircha (diagonal) dikhne ke liye
+        c.setFillColor(colors.lightgrey, alpha=0.15) 
+        c.translate(300, 450)
+        c.rotate(45)
         c.drawCentredString(0, 0, "PAWAN AUTO FINANCE")
         c.restoreState()
         
-        # --- HEADER (Blue Theme) ---
+        # --- HEADER ---
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
@@ -114,7 +133,6 @@ if st.button("Generate Premium PDF Quotation"):
             if int_type == "Flat Rate":
                 emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
             else:
-                # Reducing Balance Formula
                 r = roi / (12 * 100)
                 emi = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
                 
@@ -129,7 +147,6 @@ if st.button("Generate Premium PDF Quotation"):
         c.drawString(50, 85, f"* This is a computer-generated quotation based on {int_type.lower()}.")
         c.setFont("Helvetica-Bold", 12)
         c.drawRightString(540, 85, "Authorized Signature")
-        # --- UPDATED FIRM NAME ---
         c.drawRightString(540, 65, "AGARWAL ENTERPRISE")
 
         c.save()
