@@ -15,7 +15,7 @@ st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦")
 
 # --- UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
-st.markdown(f"**AGARWAL ENTERPRISE**") 
+st.markdown(f"**Managed by: Vikas Mishra**") 
 st.write(f"📅 {current_time}")
 
 # Input Section
@@ -29,7 +29,9 @@ with col1:
     file_charges = st.number_input("File Charges (Rs)", value=None, placeholder="Type File Charges...")
 with col2:
     other_charges = st.number_input("Other Charges (Rs)", value=None, placeholder="Type Other Charges...")
-    roi = st.number_input("Flat Interest Rate (%)", value=18.0)
+    # --- INTEREST TYPE SELECTION ---
+    int_type = st.radio("Interest Type", ["Flat Rate", "Reducing Balance"], horizontal=True)
+    roi = st.number_input(f"{int_type} (%)", value=18.0)
 
 # Calculations
 p_val = price if price is not None else 0
@@ -38,7 +40,7 @@ f_val = file_charges if file_charges is not None else 0
 o_val = other_charges if other_charges is not None else 0
 loan_amt = (p_val - d_val) + f_val + o_val
 
-if st.button("Generate Final PDF Quotation"):
+if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name or price is None:
         st.error("Please fill all details!")
     else:
@@ -49,23 +51,19 @@ if st.button("Generate Final PDF Quotation"):
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 28)
-        c.drawCentredString(300, 800, "PAWAN AUTO FINANCE")
+        c.setFont("Helvetica-Bold", 30)
+        c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
         
-        # Sub-heading: AGARWAL ENTERPRISE
-        c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(300, 778, "AGARWAL ENTERPRISE")
-        
-        c.setFont("Helvetica-Oblique", 10)
-        c.drawCentredString(300, 762, "Fastest Loan Approval & Trusted Service")
+        c.setFont("Helvetica-Oblique", 12)
+        c.drawCentredString(300, 775, "Fastest Loan Approval & Trusted Service")
         
         # --- DETAILS SECTION ---
         c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 11)
+        c.setFont("Helvetica-Bold", 12)
         c.drawString(50, 720, f"CUSTOMER NAME: {cust_name.upper()}")
-        c.drawString(50, 705, f"VEHICLE MODEL: {veh_name.upper()}")
+        c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
         c.drawRightString(540, 720, f"DATE: {current_time}")
-        c.line(50, 695, 540, 695)
+        c.line(50, 690, 540, 690)
 
         y = 660
         data = [
@@ -74,13 +72,13 @@ if st.button("Generate Final PDF Quotation"):
             ("File Charges", f"Rs. {f_val:,.2f}"),
             ("Other Charges", f"Rs. {o_val:,.2f}"),
             ("Net Loan Amount", f"Rs. {loan_amt:,.2f}"),
-            ("Interest Rate", f"{roi}% (Flat)")
+            ("Interest Rate", f"{roi}% ({int_type})")
         ]
         
         for label, val in data:
-            c.setFont("Helvetica-Bold", 11)
+            c.setFont("Helvetica-Bold", 12)
             c.drawString(70, y, label)
-            c.setFont("Helvetica", 11)
+            c.setFont("Helvetica", 12)
             c.drawRightString(520, y, val)
             y -= 25
         
@@ -91,31 +89,38 @@ if st.button("Generate Final PDF Quotation"):
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(50, y-10, 490, 30, fill=1)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 13)
+        c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(300, y, "EMI REPAYMENT OPTIONS")
         
         c.setFillColor(colors.black)
         y -= 40
-        c.setFont("Helvetica-Bold", 11)
+        c.setFont("Helvetica-Bold", 12)
         c.drawString(80, y, "TENURE")
         c.drawRightString(500, y, "MONTHLY EMI (RS)")
         c.line(50, y-5, 540, y-5)
         
         y -= 25
         for m in [12, 18, 24, 36]:
-            emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
-            c.setFont("Helvetica", 11)
+            if int_type == "Flat Rate":
+                emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
+            else:
+                # Reducing Balance Formula
+                r = roi / (12 * 100)
+                emi = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
+                
+            c.setFont("Helvetica", 12)
             c.drawString(80, y, f"{m} Months Plan")
             c.drawRightString(500, y, f"{emi:,.2f}")
             y -= 25
             
-        # --- FOOTER (Signature Section) ---
+        # --- FOOTER ---
         c.line(50, 100, 540, 100)
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(50, 85, f"* This is a computer-generated quotation based on {int_type.lower()}.")
         c.setFont("Helvetica-Bold", 12)
-        c.drawRightString(540, 80, "For, AGARWAL ENTERPRISE") # Signature line updated
-        c.setFont("Helvetica", 10)
-        c.drawRightString(540, 60, "(Authorized Signatory)")
+        c.drawRightString(540, 85, "Authorized Signature")
+        c.drawRightString(540, 65, "Vikas Mishra")
 
         c.save()
-        st.success("Final Professional PDF Generated!")
-        st.download_button("📥 Download Agarwal Enterprise Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
+        st.success(f"Professional PDF Generated ({int_type})!")
+        st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
