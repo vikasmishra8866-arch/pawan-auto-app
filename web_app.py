@@ -47,6 +47,16 @@ if st.button("Generate Premium PDF Quotation"):
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
+        # --- WATERMARK (Light Grey Background Text) ---
+        c.saveState()
+        c.setFont("Helvetica-Bold", 50)
+        c.setStrokeColor(colors.lightgrey)
+        c.setFillColor(colors.lightgrey, alpha=0.15) # Halka dikhne ke liye alpha kam rakha hai
+        c.translate(300, 450) # Page ke center mein
+        c.rotate(45) # Tircha (diagonal) dikhne ke liye
+        c.drawCentredString(0, 0, "PAWAN AUTO FINANCE")
+        c.restoreState()
+        
         # --- HEADER (Blue Theme) ---
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
@@ -119,8 +129,9 @@ if st.button("Generate Premium PDF Quotation"):
         c.drawString(50, 85, f"* This is a computer-generated quotation based on {int_type.lower()}.")
         c.setFont("Helvetica-Bold", 12)
         c.drawRightString(540, 85, "Authorized Signature")
-        c.drawRightString(540, 65, "Vikas Mishra")
+        # --- UPDATED FIRM NAME ---
+        c.drawRightString(540, 65, "AGARWAL ENTERPRISE")
 
         c.save()
-        st.success(f"Professional PDF Generated ({int_type})!")
+        st.success(f"Professional PDF Generated for {cust_name}!")
         st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
