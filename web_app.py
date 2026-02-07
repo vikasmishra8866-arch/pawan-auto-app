@@ -44,6 +44,20 @@ loan_amt = (p_val - d_val) + f_val + o_val
 st.markdown("---")
 st.subheader("📊 Live EMI Preview")
 if price is not None:
+    # --- ROW 1: 5, 10, 15, 30 EMI ---
+    p_col_top1, p_col_top2, p_col_top3, p_col_top4 = st.columns(4)
+    top_tenures = [5, 10, 15, 30]
+    top_cols = [p_col_top1, p_col_top2, p_col_top3, p_col_top4]
+    
+    for m, col in zip(top_tenures, top_cols):
+        if int_type == "Flat Rate":
+            emi_val = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
+        else:
+            r = roi / (12 * 100)
+            emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
+        col.metric(f"{m} Months", f"₹{emi_val:,.0f}")
+
+    # --- ROW 2: 12, 18, 24, 36 EMI ---
     p_col1, p_col2, p_col3, p_col4 = st.columns(4)
     tenures = [12, 18, 24, 36]
     cols = [p_col1, p_col2, p_col3, p_col4]
@@ -129,7 +143,9 @@ if st.button("Generate Premium PDF Quotation"):
         c.line(50, y-5, 540, y-5)
         
         y -= 25
-        for m in [12, 18, 24, 36]:
+        # --- PDF ME SABHI EMI PLANS (5, 10, 15, 30, 12, 18, 24, 36) ---
+        all_tenures = [5, 10, 15, 30, 12, 18, 24, 36]
+        for m in all_tenures:
             if int_type == "Flat Rate":
                 emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
             else:
