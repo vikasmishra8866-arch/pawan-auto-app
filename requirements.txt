@@ -1,3 +1,5 @@
 streamlit
+pypdf
 reportlab
+qrcode[pil]
 pytz
