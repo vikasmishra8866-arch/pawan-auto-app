@@ -42,33 +42,23 @@ loan_amt = (p_val - d_val) + f_val + o_val
 
 # --- LIVE EMI PREVIEW SECTION ---
 st.markdown("---")
-st.subheader("📊 Live EMI Preview")
+st.subheader("📊 Live EMI Preview (EMI & Total Payable)")
 if price is not None:
-    # --- ROW 1: 5, 10, 15, 30 EMI ---
-    p_col_top1, p_col_top2, p_col_top3, p_col_top4 = st.columns(4)
-    top_tenures = [5, 10, 15, 30]
-    top_cols = [p_col_top1, p_col_top2, p_col_top3, p_col_top4]
+    all_tenures = [5, 10, 12, 15, 18, 24, 30, 36]
     
-    for m, col in zip(top_tenures, top_cols):
-        if int_type == "Flat Rate":
-            emi_val = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
-        else:
-            r = roi / (12 * 100)
-            emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
-        col.metric(f"{m} Months", f"₹{emi_val:,.0f}")
-
-    # --- ROW 2: 12, 18, 24, 36 EMI ---
-    p_col1, p_col2, p_col3, p_col4 = st.columns(4)
-    tenures = [12, 18, 24, 36]
-    cols = [p_col1, p_col2, p_col3, p_col4]
-    
-    for m, col in zip(tenures, cols):
-        if int_type == "Flat Rate":
-            emi_val = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
-        else:
-            r = roi / (12 * 100)
-            emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
-        col.metric(f"{m} Months", f"₹{emi_val:,.0f}")
+    # Displaying in a cleaner grid
+    for i in range(0, len(all_tenures), 4):
+        cols = st.columns(4)
+        for m, col in zip(all_tenures[i:i+4], cols):
+            if int_type == "Flat Rate":
+                emi_val = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
+            else:
+                r = roi / (12 * 100)
+                emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
+            
+            total_payable = emi_val * m
+            col.metric(f"{m} Months", f"₹{emi_val:,.0f}/m")
+            col.caption(f"Total: ₹{total_payable:,.0f}")
 else:
     st.info("Enter Vehicle Price to see live EMI.")
 st.markdown("---")
@@ -133,29 +123,31 @@ if st.button("Generate Premium PDF Quotation"):
         c.rect(50, y-10, 490, 30, fill=1)
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(300, y, "EMI REPAYMENT OPTIONS")
+        c.drawCentredString(300, y, "REPAYMENT SCHEDULE")
         
         c.setFillColor(colors.black)
         y -= 40
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(80, y, "TENURE")
-        c.drawRightString(500, y, "MONTHLY EMI (RS)")
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(60, y, "TENURE")
+        c.drawCentredString(260, y, "MONTHLY EMI (RS)")
+        c.drawRightString(530, y, "TOTAL PAYABLE (RS)")
         c.line(50, y-5, 540, y-5)
         
         y -= 25
-        # --- PDF ME SABHI EMI PLANS (5, 10, 15, 30, 12, 18, 24, 36) ---
-        all_tenures = [5, 10, 15, 30, 12, 18, 24, 36]
+        all_tenures = [5, 10, 12, 15, 18, 24, 30, 36]
         for m in all_tenures:
             if int_type == "Flat Rate":
                 emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
             else:
                 r = roi / (12 * 100)
                 emi = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
-                
-            c.setFont("Helvetica", 12)
-            c.drawString(80, y, f"{m} Months Plan")
-            c.drawRightString(500, y, f"{emi:,.2f}")
-            y -= 25
+            
+            total_pay = emi * m
+            c.setFont("Helvetica", 11)
+            c.drawString(60, y, f"{m} Months Plan")
+            c.drawCentredString(260, y, f"{emi:,.2f}")
+            c.drawRightString(530, y, f"{total_pay:,.2f}")
+            y -= 22
             
         # --- FOOTER ---
         c.line(50, 100, 540, 100)
