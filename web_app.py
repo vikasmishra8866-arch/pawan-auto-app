@@ -5,13 +5,7 @@ from reportlab.lib import colors
 import datetime
 import io
 import pytz 
-
-# QR Code library handling to prevent crashes
-try:
-    import qrcode
-    QR_AVAILABLE = True
-except ImportError:
-    QR_AVAILABLE = False
+import qrcode # Naya QR Code Library
 
 # --- INDIAN TIME SETTING ---
 IST = pytz.timezone('Asia/Kolkata')
@@ -35,45 +29,57 @@ cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
 veh_name = st.text_input("Vehicle Name", placeholder="e.g. PIAGGIO / APE")
 
 col1, col2 = st.columns(2)
-pdf_data = []
+
+label_1, val_1 = "", 0
+label_2, val_2 = "", 0
+label_3, val_3 = "", 0
+label_4, val_4 = "", 0
 
 if service_type == "Vehicle Purchase":
     with col1:
-        price = st.number_input("Vehicle Price (Rs)", value=None)
-        down = st.number_input("Down Payment (Rs)", value=None)
-        file_charges = st.number_input("File Charges (Rs)", value=None)
+        price = st.number_input("Vehicle Price (Rs)", value=None, placeholder="Type Price...")
+        down = st.number_input("Down Payment (Rs)", value=None, placeholder="Type Down Payment...")
+        file_charges = st.number_input("File Charges (Rs)", value=None, placeholder="Type File Charges...")
     with col2:
-        other_charges = st.number_input("Other Charges (Rs)", value=None)
+        other_charges = st.number_input("Other Charges (Rs)", value=None, placeholder="Type Other Charges...")
         int_type = st.radio("Interest Type", ["Flat Rate", "Reducing Balance"], horizontal=True)
         roi = st.number_input(f"{int_type} (%)", value=18.0)
     
-    loan_amt = ((price or 0) - (down or 0)) + (file_charges or 0) + (other_charges or 0)
-    pdf_data = [("Vehicle Price", price or 0), ("Down Payment", down or 0), ("File Charges", file_charges or 0), ("Other Charges", other_charges or 0)]
+    p_val = price if price is not None else 0
+    d_val = down if down is not None else 0
+    f_val = file_charges if file_charges is not None else 0
+    o_val = other_charges if other_charges is not None else 0
+    loan_amt = (p_val - d_val) + f_val + o_val
+    
+    label_1, val_1 = "Vehicle Price", p_val
+    label_2, val_2 = "Down Payment", d_val
+    label_3, val_3 = "File Charges", f_val
+    label_4, val_4 = "Other Charges", o_val
 
-else: # LOAN ON VEHICLE (Extra Boxes Added as requested)
+else: # LOAN ON VEHICLE
     with col1:
-        l_amt = st.number_input("Loan Amount (Rs)", value=None)
-        ins_ch = st.number_input("Insurance Charges (Rs)", value=None)
-        pass_ch = st.number_input("Passing Charges (Rs)", value=None)
-        trans_ch = st.number_input("Transfer Charges (Rs)", value=None)
+        l_amt_input = st.number_input("Loan Amount (Rs)", value=None, placeholder="Enter Loan Amount...")
+        ins_charges = st.number_input("Insurance Charges (Rs)", value=None, placeholder="Enter Insurance Charges...")
+        pass_charges = st.number_input("Passing Charges (Rs)", value=None, placeholder="Enter Passing Charges...")
     with col2:
-        hp_term = st.number_input("HP Terminate (Rs)", value=None)
-        hp_add = st.number_input("HP Add (Rs)", value=None)
-        oth_ch_loan = st.number_input("Other Charges (Rs)", value=None)
+        other_charges_loan = st.number_input("Other Charges (Rs)", value=None, placeholder="Enter Other Charges...")
         int_type = st.radio("Interest Type", ["Flat Rate", "Reducing Balance"], horizontal=True)
         roi = st.number_input(f"{int_type} (%)", value=18.0)
     
-    loan_amt = (l_amt or 0) + (ins_ch or 0) + (pass_ch or 0) + (trans_ch or 0) + (hp_term or 0) + (hp_add or 0) + (oth_ch_loan or 0)
-    pdf_data = [
-        ("Loan Amount", l_amt or 0), ("Insurance Charges", ins_ch or 0), 
-        ("Passing Charges", pass_ch or 0), ("Transfer Charges", trans_ch or 0), 
-        ("HP Terminate", hp_term or 0), ("HP Add", hp_add or 0), ("Other Charges", oth_ch_loan or 0)
-    ]
+    l_val = l_amt_input if l_amt_input is not None else 0
+    i_val = ins_charges if ins_charges is not None else 0
+    ps_val = pass_charges if pass_charges is not None else 0
+    ol_val = other_charges_loan if other_charges_loan is not None else 0
+    loan_amt = l_val + i_val + ps_val + ol_val
+    
+    label_1, val_1 = "Loan Amount", l_val
+    label_2, val_2 = "Insurance Charges", i_val
+    label_3, val_3 = "Passing Charges", ps_val
+    label_4, val_4 = "Other Charges", ol_val
 
 # --- LIVE PREVIEW ---
 st.markdown("---")
-st.subheader(f"📊 Live Preview: {service_type}")
-if loan_amt > 0:
+if (service_type == "Vehicle Purchase" and price is not None) or (service_type == "Loan on Vehicle" and l_amt_input is not None):
     all_tenures = [5, 10, 12, 15, 18, 24, 30, 36]
     for i in range(0, len(all_tenures), 4):
         cols = st.columns(4)
@@ -83,105 +89,90 @@ if loan_amt > 0:
             else:
                 r = roi / (12 * 100)
                 emi_val = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
+            total_payable = emi_val * m
             col.metric(f"{m} Mo", f"₹{emi_val:,.0f}")
-            col.caption(f"Total: ₹{emi_val*m:,.0f}")
+            col.caption(f"Tot: ₹{total_payable:,.0f}")
 
 # --- PDF GENERATION ---
 if st.button("Generate Premium PDF Quotation"):
-    if not cust_name or loan_amt == 0:
-        st.error("Please enter customer name and amounts!")
+    if not cust_name or not veh_name:
+        st.error("Please fill all details!")
     else:
+        # --- QR CODE GENERATION ---
+        qr_data = f"Pawan Auto Finance\nCust: {cust_name}\nLoan: Rs.{loan_amt:,.0f}\nVehicle: {veh_name}"
+        qr = qrcode.make(qr_data)
+        qr_img_buffer = io.BytesIO()
+        qr.save(qr_img_buffer, format='PNG')
+        qr_img_buffer.seek(0)
+
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # QR Code Logic
-        qr_img_data = None
-        if QR_AVAILABLE:
-            qr = qrcode.QRCode(box_size=2)
-            qr.add_data("https://share.google/2Cs3iSUypf5Lf9PpS")
-            qr.make(fit=True)
-            img_qr = qr.make_image(fill_color="black", back_color="white")
-            qr_buf = io.BytesIO()
-            img_qr.save(qr_buf, format="PNG")
-            qr_img_data = io.BytesIO(qr_buf.getvalue())
-
-        # Header with Agarwal Enterprise
+        # Watermark & Header (Sahi Coordinates)
+        c.saveState()
+        c.setFont("Helvetica-Bold", 50)
+        c.setStrokeColor(colors.lightgrey)
+        c.setFillColor(colors.lightgrey, alpha=0.15) 
+        c.translate(300, 450)
+        c.rotate(45)
+        c.drawCentredString(0, 0, "PAWAN AUTO FINANCE")
+        c.restoreState()
+        
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 26)
-        c.drawCentredString(300, 810, "PAWAN AUTO FINANCE")
-        c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(300, 790, "AGARWAL ENTERPRISE")
+        c.setFont("Helvetica-Bold", 30)
+        c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
         
-        title_text = "Vehicle Loan Quotation" if service_type == "Loan on Vehicle" else "Vehicle Purchase Quotation"
-        c.setFont("Helvetica-Oblique", 11)
-        c.drawCentredString(300, 770, title_text)
-
-        # Customer Details
+        # Details
         c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(50, 725, f"CUSTOMER NAME: {cust_name.upper()}")
-        c.drawString(50, 710, f"VEHICLE MODEL: {veh_name.upper()}")
-        c.drawRightString(545, 725, f"DATE: {current_time}")
-        c.line(50, 700, 545, 700)
-
-        # Charges Table
-        y = 675
-        for label, val in pdf_data:
-            c.setFont("Helvetica-Bold", 10)
-            c.drawString(70, y, label.upper())
-            c.drawRightString(525, y, f"Rs. {val:,.2f}")
-            y -= 20
-        
-        c.line(50, y, 545, y)
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(70, y-15, "NET LOAN AMOUNT")
-        c.drawRightString(525, y-15, f"Rs. {loan_amt:,.2f}")
-        c.setFont("Helvetica", 10)
-        c.drawString(70, y-30, f"Interest Rate: {roi}% ({int_type})")
-
-        # EMI Table
-        y -= 65
-        c.setFillColor(colors.HexColor("#1e3d59"))
-        c.rect(50, y-10, 495, 25, fill=1)
-        c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, 720, f"CUSTOMER NAME: {cust_name.upper()}")
+        c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
+        c.drawRightString(540, 720, f"DATE: {current_time}")
+
+        # --- DRAW QR CODE (Right Top Side) ---
+        c.drawImage(io.BytesIO(qr_img_buffer.getvalue()), 460, 600, width=80, height=80)
+
+        y = 660
+        data = [(label_1, f"Rs. {val_1:,.2f}"), (label_2, f"Rs. {val_2:,.2f}"), (label_3, f"Rs. {val_3:,.2f}"), (label_4, f"Rs. {val_4:,.2f}"), ("Net Loan Amount", f"Rs. {loan_amt:,.2f}"), ("Interest Rate", f"{roi}% ({int_type})")]
+        
+        for label, val in data:
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(70, y, label)
+            c.setFont("Helvetica", 12)
+            c.drawRightString(450, y, val) # Adjust space for QR
+            y -= 25
+        
+        # Table Schedule
+        y -= 30
+        c.setFillColor(colors.HexColor("#1e3d59"))
+        c.rect(50, y-10, 490, 30, fill=1)
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(300, y, "REPAYMENT SCHEDULE")
         
         c.setFillColor(colors.black)
-        y -= 35
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(80, y, "TENURE")
-        c.drawCentredString(260, y, "MONTHLY EMI")
-        c.drawRightString(510, y, "TOTAL PAYABLE")
-        c.line(50, y-5, 545, y-5)
+        y -= 40
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(60, y, "TENURE")
+        c.drawCentredString(260, y, "MONTHLY EMI (RS)")
+        c.drawRightString(530, y, "TOTAL PAYABLE (RS)")
         
-        y -= 20
+        y -= 25
         for m in [5, 10, 12, 15, 18, 24, 30, 36]:
             if int_type == "Flat Rate":
                 emi = (loan_amt + (loan_amt * roi * (m/12) / 100)) / m
             else:
                 r = roi / (12 * 100)
                 emi = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
-            c.setFont("Helvetica", 10)
-            c.drawString(80, y, f"{m} Months")
+            total_pay = emi * m
+            c.setFont("Helvetica", 11)
+            c.drawString(60, y, f"{m} Months Plan")
             c.drawCentredString(260, y, f"{emi:,.2f}")
-            c.drawRightString(510, y, f"{emi*m:,.2f}")
-            y -= 18
-
-        # Footer with QR Code
-        c.line(50, 110, 545, 110)
-        if qr_img_data:
-            c.drawImage(qr_img_data, 50, 40, width=65, height=65)
-        
-        c.setFont("Helvetica-Oblique", 8)
-        c.drawString(125, 75, f"* Computer-generated quotation based on {int_type.lower()}.")
-        c.drawString(125, 65, "Scan QR to view Shop Address on Google Maps.")
-        
-        c.setFont("Helvetica-Bold", 11)
-        c.drawRightString(545, 75, "Authorized Signature")
-        c.drawRightString(545, 60, "AGARWAL ENTERPRISE")
+            c.drawRightString(530, y, f"{total_pay:,.2f}")
+            y -= 22
 
         c.save()
-        st.download_button("📥 Download Final Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf")
+        st.success("PDF with QR Code Generated!")
+        st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
