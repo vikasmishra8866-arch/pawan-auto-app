@@ -33,13 +33,13 @@ col1, col2 = st.columns(2)
 # Logic for inputs based on selection
 if service_mode == "Vehicle Purchase":
     with col1:
-        price = st.number_input("Vehicle Price (Rs)", value=None, placeholder="Type Price...")
-        down = st.number_input("Down Payment (Rs)", value=None, placeholder="Type Down Payment...")
-        file_charges = st.number_input("File Charges (Rs)", value=None, placeholder="Type File Charges...")
+        price = st.number_input("Vehicle Price (Rs)", value=None, placeholder="Enter Price...")
+        down = st.number_input("Down Payment (Rs)", value=None, placeholder="Enter Down Payment...")
+        file_charges = st.number_input("File Charges (Rs)", value=None, placeholder="Enter File Charges...")
     with col2:
-        other_charges = st.number_input("Other Charges (Rs)", value=None, placeholder="Type Other Charges...")
+        other_charges = st.number_input("Other Charges (Rs)", value=None, placeholder="Enter Other Charges...")
         int_type = st.radio("Interest Type", ["Flat Rate", "Reducing Balance"], horizontal=True)
-        roi = st.number_input(f"{int_type} (%)", value=18.0)
+        roi = st.number_input(f"{int_type} (%)", value=18.0) # ROI is Autofilled
     
     # Calculations
     p_val = price if price is not None else 0
@@ -49,21 +49,30 @@ if service_mode == "Vehicle Purchase":
     loan_amt = (p_val - d_val) + f_val + o_val
     pdf_labels = [("Vehicle Price", p_val), ("Down Payment", d_val), ("File Charges", f_val), ("Other Charges", o_val)]
 
-else: # LOAN ON VEHICLE (Naya Option)
+else: # LOAN ON VEHICLE
     with col1:
         l_amt = st.number_input("Loan Amount (Rs)", value=None, placeholder="Enter Loan Amt...")
-        ins_ch = st.number_input("Insurance Charge (Rs)", value=0.0)
-        pass_ch = st.number_input("Passing Charge (Rs)", value=0.0)
-        trans_ch = st.number_input("Transfer Charge (Rs)", value=0.0)
+        ins_ch = st.number_input("Insurance Charge (Rs)", value=None, placeholder="0.0")
+        pass_ch = st.number_input("Passing Charge (Rs)", value=None, placeholder="0.0")
+        trans_ch = st.number_input("Transfer Charge (Rs)", value=None, placeholder="0.0")
     with col2:
-        hp_term = st.number_input("HP Terminate Charge (Rs)", value=0.0)
-        hp_add = st.number_input("HP Add Charge (Rs)", value=0.0)
-        oth_ch = st.number_input("Other Charge (Rs)", value=0.0)
+        hp_term = st.number_input("HP Terminate Charge (Rs)", value=None, placeholder="0.0")
+        hp_add = st.number_input("HP Add Charge (Rs)", value=None, placeholder="0.0")
+        oth_ch = st.number_input("Other Charge (Rs)", value=None, placeholder="0.0")
         int_type = st.radio("Interest Type", ["Flat Rate", "Reducing Balance"], horizontal=True)
-        roi = st.number_input(f"{int_type} (%)", value=18.0)
+        roi = st.number_input(f"{int_type} (%)", value=18.0) # ROI is Autofilled
     
-    loan_amt = (l_amt if l_amt else 0) + ins_ch + pass_ch + trans_ch + hp_term + hp_add + oth_ch
-    pdf_labels = [("Loan Amount", l_amt if l_amt else 0), ("Ins/Pass/Trans", ins_ch+pass_ch+trans_ch), ("HP Term/Add", hp_term+hp_add), ("Other Charges", oth_ch)]
+    # Logic to handle None values as 0 for calculations
+    loan_amt = (l_amt if l_amt else 0) + (ins_ch if ins_ch else 0) + (pass_ch if pass_ch else 0) + \
+               (trans_ch if trans_ch else 0) + (hp_term if hp_term else 0) + \
+               (hp_add if hp_add else 0) + (oth_ch if oth_ch else 0)
+    
+    pdf_labels = [
+        ("Loan Amount", l_amt if l_amt else 0), 
+        ("Ins/Pass/Trans", (ins_ch if ins_ch else 0)+(pass_ch if pass_ch else 0)+(trans_ch if trans_ch else 0)), 
+        ("HP Term/Add", (hp_term if hp_term else 0)+(hp_add if hp_add else 0)), 
+        ("Other Charges", oth_ch if oth_ch else 0)
+    ]
 
 # --- LIVE EMI PREVIEW ---
 st.markdown("---")
@@ -81,6 +90,8 @@ if loan_amt > 0:
             total_payable = emi_val * m
             col.metric(f"{m} Months", f"₹{emi_val:,.0f}/m")
             col.caption(f"Total: ₹{total_payable:,.0f}")
+else:
+    st.info("Fill the amounts to see live EMI preview.")
 
 # --- PDF GENERATION ---
 if st.button("Generate Premium PDF Quotation"):
@@ -100,7 +111,7 @@ if st.button("Generate Premium PDF Quotation"):
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # Header & Watermark (Symmetry kept)
+        # Header & Watermark
         c.saveState()
         c.setFont("Helvetica-Bold", 50)
         c.setStrokeColor(colors.lightgrey); c.setFillColor(colors.lightgrey, alpha=0.15) 
@@ -153,8 +164,8 @@ if st.button("Generate Premium PDF Quotation"):
             c.setFont("Helvetica", 11); c.drawString(60, y, f"{m} Months Plan"); c.drawCentredString(260, y, f"{emi:,.2f}"); c.drawRightString(530, y, f"{total_pay:,.2f}")
             y -= 22
             
-        # --- FOOTER WITH QR CODE SHIFTED DOWN ---
-        qr_y = 110 # Positioned above the generated text
+        # --- FOOTER WITH QR CODE ---
+        qr_y = 110 
         qr_reader = ImageReader(qr_img_buffer)
         c.drawImage(qr_reader, 50, qr_y, width=65, height=65)
         c.setFont("Helvetica-Bold", 7)
