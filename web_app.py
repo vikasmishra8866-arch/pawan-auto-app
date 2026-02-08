@@ -2,10 +2,11 @@ import streamlit as st
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader # QR Fix ke liye
 import datetime
 import io
 import pytz 
-import qrcode # Naya QR Code Library
+import qrcode 
 
 # --- INDIAN TIME SETTING ---
 IST = pytz.timezone('Asia/Kolkata')
@@ -98,17 +99,21 @@ if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name:
         st.error("Please fill all details!")
     else:
-        # --- QR CODE GENERATION ---
+        # --- QR CODE GENERATION (Optimized for GitHub) ---
         qr_data = f"Pawan Auto Finance\nCust: {cust_name}\nLoan: Rs.{loan_amt:,.0f}\nVehicle: {veh_name}"
-        qr = qrcode.make(qr_data)
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(qr_data)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        
         qr_img_buffer = io.BytesIO()
-        qr.save(qr_img_buffer, format='PNG')
+        qr_img.save(qr_img_buffer, format='PNG')
         qr_img_buffer.seek(0)
 
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # Watermark & Header (Sahi Coordinates)
+        # Watermark & Header
         c.saveState()
         c.setFont("Helvetica-Bold", 50)
         c.setStrokeColor(colors.lightgrey)
@@ -131,8 +136,9 @@ if st.button("Generate Premium PDF Quotation"):
         c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
         c.drawRightString(540, 720, f"DATE: {current_time}")
 
-        # --- DRAW QR CODE (Right Top Side) ---
-        c.drawImage(io.BytesIO(qr_img_buffer.getvalue()), 460, 600, width=80, height=80)
+        # --- DRAW QR CODE (Using ImageReader for No Errors) ---
+        qr_reader = ImageReader(qr_img_buffer)
+        c.drawImage(qr_reader, 460, 600, width=80, height=80)
 
         y = 660
         data = [(label_1, f"Rs. {val_1:,.2f}"), (label_2, f"Rs. {val_2:,.2f}"), (label_3, f"Rs. {val_3:,.2f}"), (label_4, f"Rs. {val_4:,.2f}"), ("Net Loan Amount", f"Rs. {loan_amt:,.2f}"), ("Interest Rate", f"{roi}% ({int_type})")]
@@ -141,7 +147,7 @@ if st.button("Generate Premium PDF Quotation"):
             c.setFont("Helvetica-Bold", 12)
             c.drawString(70, y, label)
             c.setFont("Helvetica", 12)
-            c.drawRightString(450, y, val) # Adjust space for QR
+            c.drawRightString(450, y, val)
             y -= 25
         
         # Table Schedule
