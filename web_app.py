@@ -18,94 +18,100 @@ st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦", layout="wi
 # --- NEW PREMIUM INTERFACE (CSS) ---
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-    h1 { color: #1e3d59 !important; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); text-align: center; }
+    /* Main Background */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
     
-    /* Sidebar QR Styling */
-    .sidebar-qr-container {
-        padding: 10px;
+    /* RGB Border Animation for Sidebar QR */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+    }
+    .rgb-box {
+        padding: 15px;
         background: white;
         border-radius: 15px;
         text-align: center;
-        border: 3px solid;
-        animation: rgb-border 5s linear infinite;
+        border: 4px solid;
+        animation: rgb-anim 4s linear infinite;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
-    @keyframes rgb-border {
+    @keyframes rgb-anim {
         0% { border-color: #ff0000; }
         33% { border-color: #00ff00; }
         66% { border-color: #0000ff; }
         100% { border-color: #ff0000; }
     }
 
-    /* Address Box in Sidebar */
-    .side-address {
-        background: #1e3d59;
-        color: white;
-        padding: 12px;
-        border-radius: 10px;
-        font-size: 13px;
-        line-height: 1.5;
-        border-left: 4px solid #d4af37;
+    /* Title Styling */
+    h1 {
+        color: #1e3d59 !important;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
     }
 
     /* WhatsApp Button */
     .whatsapp-btn {
-        position: fixed; bottom: 20px; right: 20px; background-color: #25d366;
-        color: white !important; border-radius: 50px; padding: 15px 25px;
-        font-weight: bold; text-decoration: none; z-index: 1000;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
-    }
-    
-    /* Calculator Cards */
-    div[data-testid="stVerticalBlock"] > div:has(div.stNumberInput) {
-        background: white; padding: 20px; border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #25d366;
+        color: white !important;
+        border-radius: 50px;
+        padding: 15px 25px;
+        font-weight: bold;
+        text-decoration: none;
+        z-index: 1000;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     </style>
     
     <a href="https://wa.me/919696159863" class="whatsapp-btn" target="_blank">
-        <span>💬 Chat with Vikas</span>
+        <span>💬 WhatsApp Support</span>
     </a>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR: QR & ADDRESS ---
+# --- SIDEBAR ADDRESS & QR (Adding to empty space) ---
 with st.sidebar:
-    st.markdown('<div class="sidebar-qr-container"><b>📍 OFFICE LOCATION</b>', unsafe_allow_html=True)
+    st.markdown('<div class="rgb-box">', unsafe_allow_html=True)
+    st.markdown("<b style='color:#1e3d59;'>📍 SCAN FOR SHOP ADDRESS</b>", unsafe_allow_html=True)
     
-    # Generate QR
-    shop_map_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
-    qr_gen = qrcode.QRCode(version=1, box_size=10, border=1)
-    qr_gen.add_data(shop_map_link)
-    qr_gen.make(fit=True)
-    img_qr = qr_gen.make_image(fill_color="#1e3d59", back_color="white")
-    buf_qr = io.BytesIO()
-    img_qr.save(buf_qr, format='PNG')
+    # QR Code Generation for Sidebar
+    shop_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
+    qr_side = qrcode.QRCode(version=1, box_size=10, border=1)
+    qr_side.add_data(shop_link)
+    qr_side.make(fit=True)
+    qr_side_img = qr_side.make_image(fill_color="#1e3d59", back_color="white")
+    buf_side = io.BytesIO()
+    qr_side_img.save(buf_side, format='PNG')
     
-    st.image(buf_qr, use_container_width=True)
+    st.image(buf_side, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("""
-        <div class="side-address">
-            <b>📍 ADDRESS:</b><br>
-            SHOP NO-6, ASHIRWAD TOWNSHIP-1,<br>
-            NEAR WELCOME PAN CENTRE,<br>
-            120 FT BAMROLI ROAD, PANDESARA,<br>
-            SURAT, GUJARAT - 394210
+        <div style="background:#1e3d59; color:white; padding:12px; border-radius:10px; font-size:12px;">
+        <b>SHOP ADDRESS:</b><br>
+        SHOP NO-6, ASHIRWAD TOWNSHIP-1, NEAR WELCOME PAN CENTRE, 
+        120 FT BAMROLI ROAD, PANDESARA, SURAT, GUJARAT-394210
         </div>
-        """, unsafe_allow_html=True)
-    
-    st.info("Scan QR to open Google Maps")
+    """, unsafe_allow_html=True)
 
-# --- MAIN UI DESIGN ---
+# --- UI DESIGN (ORIGINAL) ---
 st.title("🏦 PAWAN AUTO FINANCE")
 st.markdown(f"<div style='text-align:center;'><b>Managed by: Vikas Mishra</b></div>", unsafe_allow_html=True) 
 st.write(f"📅 {current_time}")
 
-# --- ORIGINAL LOGIC (UNTOUCHED) ---
+# --- NEW OPTION SELECTION (ORIGINAL) ---
 st.markdown("---")
 service_mode = st.radio("Select Quotation Type", ["Vehicle Purchase", "Loan on Vehicle"], horizontal=True)
 
+# [START OF ORIGINAL INPUTS]
 cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
 veh_name = st.text_input("Vehicle Name", placeholder="e.g. PIAGGIO / APE")
 
@@ -152,6 +158,7 @@ else:
         ("Other Charges", oth_ch if oth_ch else 0)
     ]
 
+# --- LIVE EMI PREVIEW ---
 st.markdown("---")
 st.subheader(f"📊 Live EMI Preview ({service_mode})")
 if loan_amt > 0:
@@ -170,11 +177,11 @@ if loan_amt > 0:
 else:
     st.info("Fill the amounts to see live EMI preview.")
 
+# --- PDF GENERATION (ORIGINAL LOGIC) ---
 if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name or loan_amt == 0:
         st.error("Please fill all necessary details!")
     else:
-        # PDF Code stays identical to your original
         map_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
         qr = qrcode.QRCode(version=1, box_size=10, border=2)
         qr.add_data(map_link)
@@ -183,39 +190,49 @@ if st.button("Generate Premium PDF Quotation"):
         qr_img_buffer = io.BytesIO()
         qr_img.save(qr_img_buffer, format='PNG')
         qr_img_buffer.seek(0)
+
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
+        
         c.saveState()
         c.setFont("Helvetica-Bold", 50)
         c.setStrokeColor(colors.lightgrey); c.setFillColor(colors.lightgrey, alpha=0.15) 
         c.translate(300, 450); c.rotate(45); c.drawCentredString(0, 0, "PAWAN AUTO FINANCE")
         c.restoreState()
+        
         c.setFillColor(colors.HexColor("#1e3d59"))
         c.rect(0, 750, 600, 100, fill=1)
         c.setFillColor(colors.white); c.setFont("Helvetica-Bold", 30)
         c.drawCentredString(300, 795, "PAWAN AUTO FINANCE")
         c.setFont("Helvetica-Oblique", 12); c.drawCentredString(300, 775, "Fastest Loan Approval & Trusted Service")
+        
         c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 12)
         c.drawString(50, 720, f"CUSTOMER NAME: {cust_name.upper()}")
         c.drawString(50, 700, f"VEHICLE MODEL: {veh_name.upper()}")
         c.drawRightString(540, 720, f"DATE: {current_time}")
         c.line(50, 690, 540, 690)
+
         y = 660
         for label, val in pdf_labels:
             c.setFont("Helvetica-Bold", 12); c.drawString(70, y, label)
             c.setFont("Helvetica", 12); c.drawRightString(520, y, f"Rs. {val:,.2f}")
             y -= 25
+        
         c.setFont("Helvetica-Bold", 12); c.drawString(70, y, "Net Loan Amount")
         c.drawRightString(520, y, f"Rs. {loan_amt:,.2f}")
         y -= 25
         c.drawString(70, y, "Interest Rate"); c.drawRightString(520, y, f"{roi}% ({int_type})")
+        
         c.line(50, y-10, 540, y-10)
+
         y -= 50
         c.setFillColor(colors.HexColor("#1e3d59")); c.rect(50, y-10, 490, 30, fill=1)
         c.setFillColor(colors.white); c.setFont("Helvetica-Bold", 14); c.drawCentredString(300, y, "REPAYMENT SCHEDULE")
+        
         c.setFillColor(colors.black); y -= 40
         c.setFont("Helvetica-Bold", 11); c.drawString(60, y, "TENURE"); c.drawCentredString(260, y, "MONTHLY EMI (RS)"); c.drawRightString(530, y, "TOTAL PAYABLE (RS)")
         c.line(50, y-5, 540, y-5)
+        
         y -= 25
         for m in [5, 10, 12, 15, 18, 24, 30, 36]:
             if int_type == "Flat Rate":
@@ -225,14 +242,18 @@ if st.button("Generate Premium PDF Quotation"):
             total_pay = emi * m
             c.setFont("Helvetica", 11); c.drawString(60, y, f"{m} Months Plan"); c.drawCentredString(260, y, f"{emi:,.2f}"); c.drawRightString(530, y, f"{total_pay:,.2f}")
             y -= 22
+            
         qr_y = 110 
         qr_reader = ImageReader(qr_img_buffer)
         c.drawImage(qr_reader, 50, qr_y, width=65, height=65)
         c.setFont("Helvetica-Bold", 7); c.drawString(50, qr_y - 8, "SCAN FOR ADDRESS")
+
         c.line(50, 100, 540, 100)
-        c.setFont("Helvetica-Oblique", 9); c.drawString(50, 85, f"* Computer-generated based on {int_type.lower()}.")
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(50, 85, f"* This is a computer-generated quotation based on {int_type.lower()}.")
         c.setFont("Helvetica-Bold", 12); c.drawRightString(540, 85, "Authorized Signature")
         c.drawRightString(540, 65, "AGARWAL ENTERPRISE")
+
         c.save()
-        st.success(f"Quotation Generated!")
+        st.success(f"Quotation Generated Successfully!")
         st.download_button("📥 Download Premium Quotation", buffer.getvalue(), f"Quotation_{cust_name}.pdf", "application/pdf")
