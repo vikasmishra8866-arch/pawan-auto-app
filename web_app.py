@@ -13,7 +13,7 @@ IST = pytz.timezone('Asia/Kolkata')
 current_time = datetime.datetime.now(IST).strftime("%d-%m-%Y %I:%M %p")
 
 # Page Setup
-st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦", layout="centered")
+st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦", layout="wide")
 
 # --- NEW PREMIUM INTERFACE (CSS) ---
 st.markdown("""
@@ -21,101 +21,91 @@ st.markdown("""
     .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
     h1 { color: #1e3d59 !important; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); text-align: center; }
     
-    /* RGB Border Animation for QR Section */
-    .rgb-qr-box {
-        padding: 20px;
+    /* Sidebar QR Styling */
+    .sidebar-qr-container {
+        padding: 10px;
         background: white;
-        border-radius: 20px;
+        border-radius: 15px;
         text-align: center;
-        border: 4px solid;
+        border: 3px solid;
         animation: rgb-border 5s linear infinite;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
     @keyframes rgb-border {
-        0% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
-        33% { border-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
-        66% { border-color: #0000ff; box-shadow: 0 0 15px #0000ff; }
-        100% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
+        0% { border-color: #ff0000; }
+        33% { border-color: #00ff00; }
+        66% { border-color: #0000ff; }
+        100% { border-color: #ff0000; }
     }
 
-    /* Address Box Styling */
-    .address-box {
+    /* Address Box in Sidebar */
+    .side-address {
         background: #1e3d59;
         color: white;
-        padding: 15px;
-        border-radius: 12px;
-        margin-top: 15px;
-        font-size: 14px;
-        line-height: 1.6;
-        font-weight: 500;
-        border-left: 5px solid #d4af37;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.5;
+        border-left: 4px solid #d4af37;
     }
 
-    div[data-testid="stVerticalBlock"] > div:has(div.stNumberInput) {
-        background: white; padding: 20px; border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px;
-    }
-    div.stButton > button:first-child {
-        background: linear-gradient(90deg, #1e3d59 0%, #2b6777 100%) !important;
-        color: white !important; border-radius: 10px !important; border: none !important;
-        height: 50px; width: 100%; font-weight: bold; font-size: 18px; transition: 0.3s;
-    }
+    /* WhatsApp Button */
     .whatsapp-btn {
         position: fixed; bottom: 20px; right: 20px; background-color: #25d366;
         color: white !important; border-radius: 50px; padding: 15px 25px;
         font-weight: bold; text-decoration: none; z-index: 1000;
         box-shadow: 2px 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
     }
+    
+    /* Calculator Cards */
+    div[data-testid="stVerticalBlock"] > div:has(div.stNumberInput) {
+        background: white; padding: 20px; border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px;
+    }
     </style>
     
-    <a href="https://wa.me/919696159863?text=Hello%20Vikas%20ji,%20I%20need%20help." class="whatsapp-btn" target="_blank">
-        <span>💬 Contact on WhatsApp</span>
+    <a href="https://wa.me/919696159863" class="whatsapp-btn" target="_blank">
+        <span>💬 Chat with Vikas</span>
     </a>
     """, unsafe_allow_html=True)
 
-# --- NEW: SHOP VISIT QR SECTION ---
-# This is added at the top without touching the old logic
-st.markdown("""
-    <div class="rgb-qr-box">
-        <h3 style="color: #1e3d59; margin-bottom: 10px;">📍 VISIT OUR OFFICE</h3>
-        <p style="color: #555; font-size: 13px;">Scan the QR code below for Google Maps location</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Generate QR for Display
-shop_map_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
-qr_gen = qrcode.QRCode(version=1, box_size=10, border=1)
-qr_gen.add_data(shop_map_link)
-qr_gen.make(fit=True)
-img_qr = qr_gen.make_image(fill_color="#1e3d59", back_color="white")
-buf_qr = io.BytesIO()
-img_qr.save(buf_qr, format='PNG')
-
-# Display QR and Address Box
-q_col1, q_col2 = st.columns([1, 2])
-with q_col1:
-    st.image(buf_qr, width=200)
-with q_col2:
+# --- SIDEBAR: QR & ADDRESS ---
+with st.sidebar:
+    st.markdown('<div class="sidebar-qr-container"><b>📍 OFFICE LOCATION</b>', unsafe_allow_html=True)
+    
+    # Generate QR
+    shop_map_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
+    qr_gen = qrcode.QRCode(version=1, box_size=10, border=1)
+    qr_gen.add_data(shop_map_link)
+    qr_gen.make(fit=True)
+    img_qr = qr_gen.make_image(fill_color="#1e3d59", back_color="white")
+    buf_qr = io.BytesIO()
+    img_qr.save(buf_qr, format='PNG')
+    
+    st.image(buf_qr, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     st.markdown("""
-        <div class="address-box">
-            <b>📍 OFFICE ADDRESS:</b><br>
+        <div class="side-address">
+            <b>📍 ADDRESS:</b><br>
             SHOP NO-6, ASHIRWAD TOWNSHIP-1,<br>
-            NEAR WELCOME PAN CENTRE, 120 FT BAMROLI ROAD,<br>
-            PANDESARA, SURAT, GUJARAT - 394210
+            NEAR WELCOME PAN CENTRE,<br>
+            120 FT BAMROLI ROAD, PANDESARA,<br>
+            SURAT, GUJARAT - 394210
         </div>
         """, unsafe_allow_html=True)
+    
+    st.info("Scan QR to open Google Maps")
 
-# --- UI DESIGN (ORIGINAL) ---
+# --- MAIN UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
 st.markdown(f"<div style='text-align:center;'><b>Managed by: Vikas Mishra</b></div>", unsafe_allow_html=True) 
 st.write(f"📅 {current_time}")
 
-# --- NEW OPTION SELECTION (ORIGINAL) ---
+# --- ORIGINAL LOGIC (UNTOUCHED) ---
 st.markdown("---")
 service_mode = st.radio("Select Quotation Type", ["Vehicle Purchase", "Loan on Vehicle"], horizontal=True)
 
-# [KEEPING ALL ORIGINAL LOGIC BELOW AS IS]
 cust_name = st.text_input("Customer Name", placeholder="e.g. VIKAS MISHRA")
 veh_name = st.text_input("Vehicle Name", placeholder="e.g. PIAGGIO / APE")
 
@@ -184,7 +174,7 @@ if st.button("Generate Premium PDF Quotation"):
     if not cust_name or not veh_name or loan_amt == 0:
         st.error("Please fill all necessary details!")
     else:
-        # [PDF GENERATION LOGIC - UNTOUCHED]
+        # PDF Code stays identical to your original
         map_link = "https://share.google/2Cs3iSUypf5Lf9PpS"
         qr = qrcode.QRCode(version=1, box_size=10, border=2)
         qr.add_data(map_link)
@@ -193,7 +183,6 @@ if st.button("Generate Premium PDF Quotation"):
         qr_img_buffer = io.BytesIO()
         qr_img.save(qr_img_buffer, format='PNG')
         qr_img_buffer.seek(0)
-
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         c.saveState()
