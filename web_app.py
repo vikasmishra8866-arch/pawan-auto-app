@@ -113,7 +113,7 @@ if loan_amt > 0:
             col.metric(f"{m} Mo", f"₹{emi:,.0f}/m")
 else: st.info("Enter values to see EMI preview.")
 
-# --- PDF GENERATION (FIXED QR & FOOTER) ---
+# --- PDF GENERATION (FIXED QR OVERLAP) ---
 if st.button("Generate Premium PDF Quotation"):
     if not cust_name or loan_amt == 0: st.error("Please fill details!")
     else:
@@ -122,7 +122,7 @@ if st.button("Generate Premium PDF Quotation"):
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         
-        # Header (Pawan Auto Finance + Agarwal Enterprise + Italic Address)
+        # Header
         c.setFillColor(colors.HexColor("#1e3d59")); c.rect(0, 740, 600, 110, fill=1)
         c.setFillColor(colors.white); c.setFont("Helvetica-Bold", 28); c.drawCentredString(300, 805, "PAWAN AUTO FINANCE")
         c.setFont("Helvetica-Bold", 16); c.drawCentredString(300, 785, "AGARWAL ENTERPRISE")
@@ -156,16 +156,22 @@ if st.button("Generate Premium PDF Quotation"):
             else: r = roi / (12 * 100); emi = (loan_amt * r * (1 + r)**m) / ((1 + r)**m - 1)
             c.setFont("Helvetica", 11); c.drawString(60, y, f"{m} Months Plan"); c.drawCentredString(260, y, f"{emi:,.2f}"); c.drawRightString(530, y, f"{emi*m:,.2f}"); y -= 22
             
-        # Footer (Fixed QR position and Interest Note)
-        qr_y = 50
-        c.drawImage(ImageReader(qr_buf), 50, qr_y, width=60, height=60)
-        c.setFont("Helvetica-Bold", 7); c.drawString(50, qr_y - 8, "SCAN FOR ADDRESS") # Text niche kar diya
+        # --- FOOTER SECTION (Sahi coordinates ke saath) ---
+        qr_y_pos = 45 # QR thoda niche
+        c.drawImage(ImageReader(qr_buf), 50, qr_y_pos, width=60, height=60)
         
-        c.line(50, 100, 540, 100)
+        c.setFont("Helvetica-Bold", 7)
+        c.drawString(50, qr_y_pos - 8, "SCAN FOR ADDRESS") 
+
+        # Horizontal line (QR ke upar nahi aayegi)
+        c.line(50, 115, 540, 115) 
+        
         c.setFont("Helvetica-Oblique", 9)
-        c.drawString(50, 85, f"* This is a computer-generated quotation based on {int_type.lower()}.") # Interest Note wapas add kiya
+        c.drawString(50, 122, f"* This is a computer-generated quotation based on {int_type.lower()}.") 
         
-        c.setFont("Helvetica-Bold", 12); c.drawRightString(540, 85, "Authorized Signature")
+        # Signature logic
+        c.setFont("Helvetica-Bold", 12)
+        c.drawRightString(540, 85, "Authorized Signature")
         c.drawRightString(540, 65, "AGARWAL ENTERPRISE")
 
         c.save(); st.success("Quotation Ready!")
