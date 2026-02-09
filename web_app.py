@@ -13,11 +13,82 @@ IST = pytz.timezone('Asia/Kolkata')
 current_time = datetime.datetime.now(IST).strftime("%d-%m-%Y %I:%M %p")
 
 # Page Setup
-st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦")
+st.set_page_config(page_title="Pawan Auto Finance", page_icon="🏦", layout="centered")
+
+# --- NEW PREMIUM INTERFACE (CSS) ---
+# Isse purane logic par koi asar nahi padega, sirf look change hoga
+st.markdown("""
+    <style>
+    /* Main Background */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    /* Title Styling */
+    h1 {
+        color: #1e3d59 !important;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    /* Card like containers for inputs */
+    div[data-testid="stVerticalBlock"] > div:has(div.stNumberInput) {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+    }
+
+    /* Premium Button */
+    div.stButton > button:first-child {
+        background: linear-gradient(90deg, #1e3d59 0%, #2b6777 100%) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        border: none !important;
+        height: 50px;
+        width: 100%;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.3s;
+    }
+    div.stButton > button:first-child:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 61, 89, 0.4);
+    }
+
+    /* Floating WhatsApp Button */
+    .whatsapp-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #25d366;
+        color: white !important;
+        border-radius: 50px;
+        padding: 15px 25px;
+        font-weight: bold;
+        text-decoration: none;
+        z-index: 1000;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .whatsapp-btn:hover {
+        background-color: #128c7e;
+    }
+    </style>
+    
+    <a href="https://wa.me/919696159863?text=Hello%20Vikas%20ji,%20I%20need%20help%20with%20a%20quotation." class="whatsapp-btn" target="_blank">
+        <span>💬 Contact on WhatsApp</span>
+    </a>
+    """, unsafe_allow_html=True)
 
 # --- UI DESIGN ---
 st.title("🏦 PAWAN AUTO FINANCE")
-st.markdown(f"**Managed by: Vikas Mishra**") 
+st.markdown(f"<div style='text-align:center;'><b>Managed by: Vikas Mishra</b></div>", unsafe_allow_html=True) 
 st.write(f"📅 {current_time}")
 
 # --- NEW OPTION SELECTION ---
